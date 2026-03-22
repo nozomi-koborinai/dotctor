@@ -4,7 +4,7 @@ A CLI tool to diagnose your dotfiles health.
 
 > This project is specialized for
 > [nozomi-koborinai/dotfiles](https://github.com/nozomi-koborinai/dotfiles).
-> Built as a Rust learning project — contributions and feedback welcome!
+> Built as a Rust learning project.
 
 ## Checks
 
