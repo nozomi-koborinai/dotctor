@@ -1,8 +1,8 @@
 use clap::Parser;
+use dotctor::checks::Check;
 use dotctor::checks::symlink::SymlinkCheck;
 use dotctor::checks::tools::ToolsCheck;
 use dotctor::checks::version::VersionCheck;
-use dotctor::checks::Check;
 use dotctor::{config, report};
 
 /// A CLI tool to diagnose your dotfiles health

@@ -34,8 +34,7 @@ pub fn load(path: Option<&str>) -> Result<Config, String> {
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read {}: {e}", config_path.display()))?;
 
-    toml::from_str(&content)
-        .map_err(|e| format!("Failed to parse {}: {e}", config_path.display()))
+    toml::from_str(&content).map_err(|e| format!("Failed to parse {}: {e}", config_path.display()))
 }
 
 fn find_config() -> Result<std::path::PathBuf, String> {
