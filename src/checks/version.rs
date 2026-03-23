@@ -98,3 +98,57 @@ fn version_satisfies(actual: &str, minimum: &str) -> bool {
 
     actual_parts.len() >= min_parts.len()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extract_version_from_node() {
+        assert_eq!(extract_version("v22.12.0"), Some("22.12.0".to_string()));
+    }
+
+    #[test]
+    fn extract_version_from_git() {
+        assert_eq!(
+            extract_version("git version 2.53.0"),
+            Some("2.53.0".to_string())
+        );
+    }
+
+    #[test]
+    fn extract_version_from_nvim() {
+        assert_eq!(extract_version("NVIM v0.10.4"), Some("0.10.4".to_string()));
+    }
+
+    #[test]
+    fn extract_version_empty() {
+        assert_eq!(extract_version("no version here!"), None);
+    }
+
+    #[test]
+    fn satisfies_equal() {
+        assert!(version_satisfies("22.12.0", "22"));
+    }
+
+    #[test]
+    fn satisfies_higher_major() {
+        assert!(version_satisfies("23.0.0", "22"));
+    }
+
+    #[test]
+    fn satisfies_lower_major() {
+        assert!(!version_satisfies("21.0.0", "22"));
+    }
+
+    #[test]
+    fn satisfies_minor_comparison() {
+        assert!(version_satisfies("0.11.0", "0.10"));
+        assert!(!version_satisfies("0.9.0", "0.10"));
+    }
+
+    #[test]
+    fn satisfies_exact_match() {
+        assert!(version_satisfies("0.10", "0.10"));
+    }
+}

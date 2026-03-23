@@ -57,3 +57,33 @@ fn dirs_home() -> std::path::PathBuf {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| std::path::PathBuf::from("/"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_valid_toml() {
+        let toml_str = r#"
+[symlinks]
+"~/.zshrc" = "configs/zshrc"
+
+[tools]
+required = ["git", "nvim"]
+
+[versions]
+node = ">= 22"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.symlinks.len(), 1);
+        assert_eq!(config.symlinks["~/.zshrc"], "configs/zshrc");
+        assert_eq!(config.tools.required, vec!["git", "nvim"]);
+        assert_eq!(config.versions["node"], ">= 22");
+    }
+
+    #[test]
+    fn load_nonexistent_file() {
+        let result = load(Some("/nonexistent/path.toml"));
+        assert!(result.is_err());
+    }
+}

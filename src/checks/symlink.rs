@@ -56,3 +56,25 @@ fn expand_tilde(path: &str) -> String {
         path.to_string()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn expand_tilde_with_home() {
+        let result = expand_tilde("~/.zshrc");
+        assert!(!result.starts_with('~'));
+        assert!(result.ends_with("/.zshrc"));
+    }
+
+    #[test]
+    fn expand_tilde_absolute_path() {
+        assert_eq!(expand_tilde("/etc/hosts"), "/etc/hosts");
+    }
+
+    #[test]
+    fn expand_tilde_relative_path() {
+        assert_eq!(expand_tilde("configs/zshrc"), "configs/zshrc");
+    }
+}
