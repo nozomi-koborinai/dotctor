@@ -2,12 +2,15 @@ use std::process::Command;
 
 use super::{Check, Diagnostic, Level};
 
-/// PATH に存在すべきコマンド一覧
-const REQUIRED_TOOLS: &[&str] = &[
-    "git", "nvim", "gh", "fzf", "fd", "lazygit", "deno", "node", "cargo", "wezterm",
-];
+pub struct ToolsCheck {
+    required: Vec<String>,
+}
 
-pub struct ToolsCheck;
+impl ToolsCheck {
+    pub fn new(required: Vec<String>) -> Self {
+        Self { required }
+    }
+}
 
 impl Check for ToolsCheck {
     fn name(&self) -> &str {
@@ -17,7 +20,7 @@ impl Check for ToolsCheck {
     fn run(&self) -> Vec<Diagnostic> {
         let mut results = Vec::new();
 
-        for tool in REQUIRED_TOOLS {
+        for tool in &self.required {
             let found = Command::new("which")
                 .arg(tool)
                 .output()

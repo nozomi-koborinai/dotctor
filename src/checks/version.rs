@@ -1,34 +1,18 @@
+use std::collections::BTreeMap;
 use std::process::Command;
 
 use super::{Check, Diagnostic, Level};
 
-/// バージョン要件の定義
-struct VersionRequirement {
-    command: &'static str,
-    args: &'static [&'static str],
-    minimum: &'static str,
+pub struct VersionCheck {
+    /// command -> ">= X.Y" のマッピング
+    versions: BTreeMap<String, String>,
 }
 
-/// 最低バージョン要件
-const REQUIREMENTS: &[VersionRequirement] = &[
-    VersionRequirement {
-        command: "node",
-        args: &["--version"],
-        minimum: "22",
-    },
-    VersionRequirement {
-        command: "git",
-        args: &["--version"],
-        minimum: "2",
-    },
-    VersionRequirement {
-        command: "nvim",
-        args: &["--version"],
-        minimum: "0.10",
-    },
-];
-
-pub struct VersionCheck;
+impl VersionCheck {
+    pub fn new(versions: BTreeMap<String, String>) -> Self {
+        Self { versions }
+    }
+}
 
 impl Check for VersionCheck {
     fn name(&self) -> &str {
@@ -38,30 +22,31 @@ impl Check for VersionCheck {
     fn run(&self) -> Vec<Diagnostic> {
         let mut results = Vec::new();
 
-        for req in REQUIREMENTS {
-            let version = get_version(req.command, req.args);
+        for (command, requirement) in &self.versions {
+            let minimum = requirement
+                .strip_prefix(">= ")
+                .unwrap_or(requirement.as_str());
+
+            let version = get_version(command);
 
             match version {
                 Some(v) => {
-                    if version_satisfies(&v, req.minimum) {
+                    if version_satisfies(&v, minimum) {
                         results.push(Diagnostic {
                             level: Level::Ok,
-                            message: format!("{} {} (>= {})", req.command, v, req.minimum),
+                            message: format!("{command} {v} (>= {minimum})"),
                         });
                     } else {
                         results.push(Diagnostic {
                             level: Level::Error,
-                            message: format!(
-                                "{} {} is below minimum {}",
-                                req.command, v, req.minimum
-                            ),
+                            message: format!("{command} {v} is below minimum {minimum}"),
                         });
                     }
                 }
                 None => {
                     results.push(Diagnostic {
                         level: Level::Warn,
-                        message: format!("{}: could not determine version", req.command),
+                        message: format!("{command}: could not determine version"),
                     });
                 }
             }
@@ -72,8 +57,8 @@ impl Check for VersionCheck {
 }
 
 /// コマンドを実行してバージョン文字列を取得する
-fn get_version(command: &str, args: &[&str]) -> Option<String> {
-    let output = Command::new(command).args(args).output().ok()?;
+fn get_version(command: &str) -> Option<String> {
+    let output = Command::new(command).arg("--version").output().ok()?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     extract_version(&stdout)
 }

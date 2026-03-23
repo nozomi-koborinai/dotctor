@@ -1,50 +1,18 @@
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use super::{Check, Diagnostic, Level};
 
-/// チェック対象の symlink 定義
-struct SymlinkEntry {
-    source: &'static str,
-    target: &'static str,
+pub struct SymlinkCheck {
+    /// target -> source のマッピング
+    symlinks: BTreeMap<String, String>,
 }
 
-/// nozomi-koborinai/dotfiles 用の symlink 一覧
-const SYMLINKS: &[SymlinkEntry] = &[
-    SymlinkEntry {
-        source: "configs/zshrc",
-        target: "~/.zshrc",
-    },
-    SymlinkEntry {
-        source: "configs/gitconfig",
-        target: "~/.gitconfig",
-    },
-    SymlinkEntry {
-        source: "configs/nvim",
-        target: "~/.config/nvim",
-    },
-    SymlinkEntry {
-        source: "configs/wezterm",
-        target: "~/.config/wezterm",
-    },
-    SymlinkEntry {
-        source: "configs/gh/config.yml",
-        target: "~/.config/gh/config.yml",
-    },
-    SymlinkEntry {
-        source: "configs/zeno/config.yml",
-        target: "~/.config/zeno/config.yml",
-    },
-    SymlinkEntry {
-        source: "configs/aerospace/aerospace.toml",
-        target: "~/.config/aerospace/aerospace.toml",
-    },
-    SymlinkEntry {
-        source: "configs/lazygit/config.yml",
-        target: "~/Library/Application Support/lazygit/config.yml",
-    },
-];
-
-pub struct SymlinkCheck;
+impl SymlinkCheck {
+    pub fn new(symlinks: BTreeMap<String, String>) -> Self {
+        Self { symlinks }
+    }
+}
 
 impl Check for SymlinkCheck {
     fn name(&self) -> &str {
@@ -54,24 +22,24 @@ impl Check for SymlinkCheck {
     fn run(&self) -> Vec<Diagnostic> {
         let mut results = Vec::new();
 
-        for entry in SYMLINKS {
-            let target = expand_tilde(entry.target);
-            let path = Path::new(&target);
+        for (target, source) in &self.symlinks {
+            let expanded = expand_tilde(target);
+            let path = Path::new(&expanded);
 
             if !path.exists() {
                 results.push(Diagnostic {
                     level: Level::Error,
-                    message: format!("{} does not exist", entry.target),
+                    message: format!("{target} does not exist"),
                 });
             } else if !path.is_symlink() {
                 results.push(Diagnostic {
                     level: Level::Warn,
-                    message: format!("{} exists but is not a symlink", entry.target),
+                    message: format!("{target} exists but is not a symlink"),
                 });
             } else {
                 results.push(Diagnostic {
                     level: Level::Ok,
-                    message: format!("{} -> {}", entry.target, entry.source),
+                    message: format!("{target} -> {source}"),
                 });
             }
         }
