@@ -72,10 +72,10 @@ fn extract_version(text: &str) -> Option<String> {
             if start.is_none() {
                 start = Some(i);
             }
-        } else if c != '.' {
-            if let Some(s) = start {
-                return Some(text[s..i].to_string());
-            }
+        } else if c != '.'
+            && let Some(s) = start
+        {
+            return Some(text[s..i].to_string());
         }
     }
 
