@@ -1,5 +1,6 @@
 use clap::Parser;
 use dotctor::checks::Check;
+use dotctor::checks::clt::CltCheck;
 use dotctor::checks::symlink::SymlinkCheck;
 use dotctor::checks::tools::ToolsCheck;
 use dotctor::checks::version::VersionCheck;
@@ -9,7 +10,7 @@ use dotctor::{config, report};
 #[derive(Parser)]
 #[command(name = "dotctor", version)]
 struct Cli {
-    /// Run only the specified check (symlink, tools, version)
+    /// Run only the specified check (symlink, tools, version, clt)
     #[arg(short, long)]
     check: Option<String>,
 
@@ -33,15 +34,17 @@ fn main() {
         Some("symlink") => vec![Box::new(SymlinkCheck::new(cfg.symlinks))],
         Some("tools") => vec![Box::new(ToolsCheck::new(cfg.tools.required))],
         Some("version") => vec![Box::new(VersionCheck::new(cfg.versions))],
+        Some("clt") => vec![Box::new(CltCheck)],
         Some(name) => {
             eprintln!("Unknown check: {name}");
-            eprintln!("Available checks: symlink, tools, version");
+            eprintln!("Available checks: symlink, tools, version, clt");
             std::process::exit(1);
         }
         None => vec![
             Box::new(SymlinkCheck::new(cfg.symlinks)),
             Box::new(ToolsCheck::new(cfg.tools.required)),
             Box::new(VersionCheck::new(cfg.versions)),
+            Box::new(CltCheck),
         ],
     };
 
@@ -51,6 +54,10 @@ fn main() {
 
     for checker in &checkers {
         let diagnostics = checker.run();
+        // チェック対象外の環境（例: macOS 以外での clt）は表示ごとスキップ
+        if diagnostics.is_empty() {
+            continue;
+        }
         report::print_report(checker.name(), &diagnostics);
         if report::has_errors(&diagnostics) {
             has_any_error = true;

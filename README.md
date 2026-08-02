@@ -13,6 +13,7 @@ A CLI tool to diagnose your dotfiles health.
 | symlink | Detect broken or missing symlinks |
 | tools | Verify required commands exist in PATH |
 | version | Check tool versions meet expectations |
+| clt | Verify Homebrew's Command Line Tools support the running macOS (macOS only, needs no config) |
 
 ## Install
 
@@ -34,6 +35,7 @@ Run a specific check:
 dotctor --check symlink
 dotctor --check tools
 dotctor --check version
+dotctor --check clt
 ```
 
 Use a custom config file:
@@ -79,6 +81,9 @@ dotctor - diagnosing your dotfiles...
 
 [version]
     OK  node 22.12.0 (>= 22)
+
+[clt]
+    OK  Command Line Tools support this macOS
 ```
 
 Exit code is `1` if any check reports an error, `0` otherwise.

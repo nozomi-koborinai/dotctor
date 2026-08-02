@@ -1,3 +1,4 @@
+pub mod clt;
 pub mod symlink;
 pub mod tools;
 pub mod version;
