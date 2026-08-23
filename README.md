@@ -18,6 +18,12 @@ A CLI tool to diagnose your dotfiles health.
 ## Install
 
 ```bash
+brew install nozomi-koborinai/tap/dotctor
+```
+
+Or build it yourself:
+
+```bash
 cargo install --git https://github.com/nozomi-koborinai/dotctor
 ```
 
